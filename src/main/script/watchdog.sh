@@ -17,7 +17,7 @@ prog=$1
 pc=$(pgrep -fl "$prog")
 pcnt=$(echo "$pc" | wc -l)
 
-if [[ $pcnt > 1 ]]; then
+if [[ $pcnt > 2 ]]; then
    echo "$prog is running";
    echo $pcnt
    echo $(pgrep -lf "$prog")
