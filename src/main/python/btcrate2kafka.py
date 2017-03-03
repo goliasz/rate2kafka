@@ -26,13 +26,39 @@ BTC_TICKER_URL = "https://blockchain.info/ticker"
 # sec
 INTERVAL = 600
 
+# Normalization base
+btc_norm = {
+  "USD" : 1268.86,
+  "ISK" : 136822.86,
+  "HKD" : 9849.97,
+  "TWD" : 39154.48,
+  "CHF" : 1285.47,
+  "EUR" : 1206.81,
+  "DKK" : 8970.7,
+  "CLP" : 828489.45,
+  "CAD" : 1696.01,
+  "CNY" : 8738.89,
+  "THB" : 44422.79,
+  "AUD" : 1671.09,
+  "SGD" : 1790.8,
+  "KRW" : 1453102.7,
+  "JPY" : 145136.54,
+  "PLN" : 5185.23,
+  "GBP" : 1032.96,
+  "SEK" : 11494.02,
+  "NZD" : 1790.14,
+  "BRL" : 3941.3,
+  "RUB" : 74428.75
+  }
+
 def create_msg():
   msg = {"target":"BTC", "timestamp":int(time.time() * 1000)}
   r = requests.get(BTC_TICKER_URL)
   rj = r.json()
   for i in rj.items():
     #print i[0],i[1].get("last")
-    msg[i[0]] = i[1].get("last")
+    msg[i[0]] = float(i[1].get("last"))
+    msg[i[0]+"n"] = float(i[1].get("last"))/btc_norm.get(i[0],1.0)
   return msg  
 
 if __name__ == '__main__':
