@@ -1,0 +1,50 @@
+{
+  "type" : "index_hadoop",
+  "spec" : {
+    "ioConfig" : {
+      "type" : "hadoop",
+      "inputSpec" : {
+        "type" : "static",
+        "paths" : "btc_rates.json"
+      }
+    },
+    "dataSchema" : {
+      "dataSource" : "btc-rates-test",
+      "granularitySpec" : {
+        "type" : "uniform",
+        "segmentGranularity" : "hour",
+        "queryGranularity" : "none",
+        "intervals" : ["2017-03-02/2017-03-04"]
+      },
+      "parser" : {
+        "type" : "hadoopyString",
+        "parseSpec" : {
+          "format" : "json",
+          "dimensionsSpec" : {
+            "dimensions" : [
+              "target"
+            ]
+          },
+          "timestampSpec" : {
+            "format" : "millis",
+            "column" : "timestamp"
+          }
+        }
+      },
+      "metricsSpec" : [
+            {"type" : "count", "name" : "count"},
+            {"type" : "doubleMin", "name":"USDm", "fieldName":"USD"},
+            {"type" : "doubleMax", "name":"USDx", "fieldName":"USD"}
+      ]
+    },
+    "tuningConfig" : {
+      "type" : "hadoop",
+      "partitionsSpec" : {
+        "type" : "hashed",
+        "targetPartitionSize" : 5000000
+      },
+      "jobProperties" : {
+      }
+    }
+  }
+}
