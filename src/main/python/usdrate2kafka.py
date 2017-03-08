@@ -69,5 +69,5 @@ if __name__ == '__main__':
       print i[0] 
       msgj = create_msg(i[0])
       print msgj
-      #producer.send(args.kafka_target_topic,msgj)
+      producer.send(args.kafka_target_topic,msgj)
     time.sleep(INTERVAL)
