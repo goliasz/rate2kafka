@@ -22,15 +22,17 @@ from datetime import datetime
 from kafka import KafkaProducer
 
 BTC_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/btcusd"
+XRP_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/xrpeur"
 # sec
 INTERVAL = 300
 
 # Normalization base
 btc_norm = {
-  "USD" : 1268.86
+  "USD" : 1268.86,
+  "XRPEUR": 0.03047
   }
 
-def create_msg():
+def create_BTCUSD_msg():
 #  msg = {"target":"BTC", "timestamp":int(time.time() * 1000)}
   r = requests.get(BTC_TICKER_URL)
   msg = r.json()
@@ -40,6 +42,18 @@ def create_msg():
   msg["topic"] = "BTCUSD"
   last = float(msg.get("last"))
   last_n = last/btc_norm.get("USD")
+  msg["last_n"] = last_n
+  return msg
+
+def create_XRPEUR_msg():
+  r = requests.get(XRP_TICKER_URL)
+  msg = r.json()
+  secs = msg.get("timestamp")
+  millis = int(secs)*1000
+  msg["timestamp"] = millis
+  msg["topic"] = "XRPEUR"
+  last = float(msg.get("last"))
+  last_n = last/btc_norm.get("XRPEUR")
   msg["last_n"] = last_n
   return msg
 
@@ -57,7 +71,11 @@ if __name__ == '__main__':
   producer = KafkaProducer(bootstrap_servers=args.kafka_bootstrap_srvs,value_serializer=lambda v: json.dumps(v).encode('utf-8'))
 
   while True:
-    msgj = create_msg()
-    print msgj
+    # BTCUSD
+    msgj = create_BTCUSD_msg()
     producer.send(args.kafka_target_topic,msgj)
+    # XRPEUR
+    msgj = create_XRPEUR_msg()
+    producer.send(args.kafka_target_topic,msgj)
+    #
     time.sleep(INTERVAL)
