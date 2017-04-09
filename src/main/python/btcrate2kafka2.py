@@ -21,34 +21,36 @@ import time
 from datetime import datetime
 from kafka import KafkaProducer
 
-BTC_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/btcusd"
-XRP_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/xrpeur"
+BTCUSD_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/btcusd"
+XRPEUR_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/xrpeur"
+XRPUSD_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/xrpusd"
 BTCEUR_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/btceur"
 # sec
 INTERVAL = 300
 
 # Normalization base
 btc_norm = {
-  "USD" : 1268.86,
+  "BTCUSD" : 1268.86,
   "XRPEUR": 0.03047,
+  "XRPUSD": 0.03492,
   "BTCEUR": 1113.91
   }
 
 def create_BTCUSD_msg():
 #  msg = {"target":"BTC", "timestamp":int(time.time() * 1000)}
-  r = requests.get(BTC_TICKER_URL)
+  r = requests.get(BTCUSD_TICKER_URL)
   msg = r.json()
   secs = msg.get("timestamp")
   millis = int(secs)*1000
   msg["timestamp"] = millis
   msg["topic"] = "BTCUSD"
   last = float(msg.get("last"))
-  last_n = last/btc_norm.get("USD")
+  last_n = last/btc_norm.get("BTCUSD")
   msg["last_n"] = last_n
   return msg
 
 def create_XRPEUR_msg():
-  r = requests.get(XRP_TICKER_URL)
+  r = requests.get(XRPEUR_TICKER_URL)
   msg = r.json()
   secs = msg.get("timestamp")
   millis = int(secs)*1000
@@ -56,6 +58,18 @@ def create_XRPEUR_msg():
   msg["topic"] = "XRPEUR"
   last = float(msg.get("last"))
   last_n = last/btc_norm.get("XRPEUR")
+  msg["last_n"] = last_n
+  return msg
+
+def create_XRPUSD_msg():
+  r = requests.get(XRPUSD_TICKER_URL)
+  msg = r.json()
+  secs = msg.get("timestamp")
+  millis = int(secs)*1000
+  msg["timestamp"] = millis
+  msg["topic"] = "XRPUSD"
+  last = float(msg.get("last"))
+  last_n = last/btc_norm.get("XRPUSD")
   msg["last_n"] = last_n
   return msg
 
@@ -90,6 +104,9 @@ if __name__ == '__main__':
     producer.send(args.kafka_target_topic,msgj)
     # XRPEUR
     msgj = create_XRPEUR_msg()
+    producer.send(args.kafka_target_topic,msgj)
+    # XRPUSD
+    msgj = create_XRPUSD_msg()
     producer.send(args.kafka_target_topic,msgj)
     # BTCEUR
     msgj = create_BTCEUR_msg()
