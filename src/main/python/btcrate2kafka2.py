@@ -23,13 +23,15 @@ from kafka import KafkaProducer
 
 BTC_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/btcusd"
 XRP_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/xrpeur"
+BTCEUR_TICKER_URL = "https://www.bitstamp.net/api/v2/ticker/btceur"
 # sec
 INTERVAL = 300
 
 # Normalization base
 btc_norm = {
   "USD" : 1268.86,
-  "XRPEUR": 0.03047
+  "XRPEUR": 0.03047,
+  "BTCEUR": 1113.91
   }
 
 def create_BTCUSD_msg():
@@ -57,6 +59,18 @@ def create_XRPEUR_msg():
   msg["last_n"] = last_n
   return msg
 
+def create_BTCEUR_msg():
+  r = requests.get(BTCEUR_TICKER_URL)
+  msg = r.json()
+  secs = msg.get("timestamp")
+  millis = int(secs)*1000
+  msg["timestamp"] = millis
+  msg["topic"] = "BTCEUR"
+  last = float(msg.get("last"))
+  last_n = last/btc_norm.get("BTCEUR")
+  msg["last_n"] = last_n
+  return msg
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="USD/BTC 2 Kafka")
   parser.add_argument('--kafka_bootstrap_srvs', default="localhost:9092")
@@ -76,6 +90,9 @@ if __name__ == '__main__':
     producer.send(args.kafka_target_topic,msgj)
     # XRPEUR
     msgj = create_XRPEUR_msg()
+    producer.send(args.kafka_target_topic,msgj)
+    # BTCEUR
+    msgj = create_BTCEUR_msg()
     producer.send(args.kafka_target_topic,msgj)
     #
     time.sleep(INTERVAL)
